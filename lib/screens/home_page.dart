@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/user_card.dart';
+import 'user_form_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -113,6 +114,17 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UserFormPage()),
+          );
+        },
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        child: const Icon(Icons.add),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
