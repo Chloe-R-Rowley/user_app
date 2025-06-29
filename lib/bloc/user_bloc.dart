@@ -51,17 +51,36 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     try {
       final response = await http.get(
         Uri.parse('https://jsonplaceholder.typicode.com/users'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'User-Agent': 'Flutter-UserApp/1.0',
+        },
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final users = data.map((json) => User.fromJson(json)).toList();
         emit(UserLoaded(users));
+      } else if (response.statusCode == 403) {
+        emit(
+          UserError(
+            'Access forbidden. The API may be rate-limited or blocked. Please try again later.',
+          ),
+        );
       } else {
         emit(UserError('Failed to load users: HTTP ${response.statusCode}'));
       }
     } catch (e) {
-      emit(UserError('Failed to load users: $e'));
+      if (e.toString().contains('SocketException')) {
+        emit(
+          UserError(
+            'No internet connection. Please check your network and try again.',
+          ),
+        );
+      } else {
+        emit(UserError('Failed to load users: $e'));
+      }
     }
   }
 }
