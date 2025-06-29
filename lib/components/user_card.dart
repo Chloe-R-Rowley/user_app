@@ -14,7 +14,28 @@ class UserCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => UserDetailPage(user: user)),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                UserDetailPage(user: user),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOutCubic;
+
+                  var tween = Tween(
+                    begin: begin,
+                    end: end,
+                  ).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  );
+                },
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
         );
       },
       child: Card(
