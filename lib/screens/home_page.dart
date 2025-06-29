@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             itemCount: state.users.length,
                             itemBuilder: (context, index) {
                               final user = state.users[index];
-                              return UserCard(user: user.toJson());
+                              return UserCard(user: user);
                             },
                           ),
                         ),

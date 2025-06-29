@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../components/user_detail_card.dart';
+import '../models/user_model.dart';
 
 class UserDetailPage extends StatelessWidget {
-  final Map<String, dynamic> user;
+  final User user;
 
   const UserDetailPage({super.key, required this.user});
 
@@ -26,7 +27,7 @@ class UserDetailPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      user['name'] ?? 'User Details',
+                      user.name,
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -36,10 +37,10 @@ class UserDetailPage extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
 
-                    if (user['username'] != null) ...[
+                    if (user.username != null) ...[
                       const SizedBox(height: 8),
                       Text(
-                        '@${user['username']}',
+                        '@${user.username}',
                         style: TextStyle(
                           fontSize: 20,
                           color: colorScheme.onSurface,
@@ -69,34 +70,34 @@ class UserDetailPage extends StatelessWidget {
 
               UserDetailCard(
                 label: 'User ID',
-                value: user['id'].toString(),
+                value: user.id.toString(),
                 icon: Icons.person_outline,
               ),
 
               const SizedBox(height: 4),
 
-              if (user['email'] != null) ...[
+              if (user.email != null) ...[
                 UserDetailCard(
                   label: 'Email',
-                  value: user['email'],
+                  value: user.email!,
                   icon: Icons.email_outlined,
                 ),
                 const SizedBox(height: 4),
               ],
 
-              if (user['phone'] != null) ...[
+              if (user.phone != null) ...[
                 UserDetailCard(
                   label: 'Phone',
-                  value: user['phone'],
+                  value: user.phone!,
                   icon: Icons.phone_outlined,
                 ),
                 const SizedBox(height: 4),
               ],
 
-              if (user['website'] != null) ...[
+              if (user.website != null) ...[
                 UserDetailCard(
                   label: 'Website',
-                  value: user['website'],
+                  value: user.website!,
                   icon: Icons.language_outlined,
                 ),
                 const SizedBox(height: 4),
@@ -104,7 +105,7 @@ class UserDetailPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              if (user['address'] != null) ...[
+              if (user.address != null) ...[
                 Text(
                   'Address',
                   style: TextStyle(
@@ -119,16 +120,16 @@ class UserDetailPage extends StatelessWidget {
 
                 UserDetailCard(
                   label: 'Street',
-                  value: user['address']['street'] ?? '',
+                  value: user.address!.street ?? '',
                   icon: Icons.location_on_outlined,
                 ),
 
                 const SizedBox(height: 4),
 
-                if (user['address']['suite'] != null) ...[
+                if (user.address!.suite != null) ...[
                   UserDetailCard(
                     label: 'Suite',
-                    value: user['address']['suite'],
+                    value: user.address!.suite!,
                     icon: Icons.home_outlined,
                   ),
                   const SizedBox(height: 4),
@@ -136,7 +137,7 @@ class UserDetailPage extends StatelessWidget {
 
                 UserDetailCard(
                   label: 'City',
-                  value: user['address']['city'] ?? '',
+                  value: user.address!.city ?? '',
                   icon: Icons.location_city_outlined,
                 ),
 
@@ -144,17 +145,17 @@ class UserDetailPage extends StatelessWidget {
 
                 UserDetailCard(
                   label: 'Zip Code',
-                  value: user['address']['zipcode'] ?? '',
+                  value: user.address!.zipcode ?? '',
                   icon: Icons.pin_drop_outlined,
                 ),
 
                 const SizedBox(height: 4),
 
-                if (user['address']['geo'] != null) ...[
+                if (user.address!.geo != null) ...[
                   UserDetailCard(
                     label: 'Coordinates',
                     value:
-                        '${user['address']['geo']['lat']}, ${user['address']['geo']['lng']}',
+                        '${user.address!.geo!.lat}, ${user.address!.geo!.lng}',
                     icon: Icons.gps_fixed_outlined,
                   ),
                   const SizedBox(height: 4),
@@ -163,7 +164,7 @@ class UserDetailPage extends StatelessWidget {
                 const SizedBox(height: 20),
               ],
 
-              if (user['company'] != null) ...[
+              if (user.company != null) ...[
                 Text(
                   'Company',
                   style: TextStyle(
@@ -178,25 +179,25 @@ class UserDetailPage extends StatelessWidget {
 
                 UserDetailCard(
                   label: 'Company Name',
-                  value: user['company']['name'] ?? '',
+                  value: user.company!.name ?? '',
                   icon: Icons.business_outlined,
                 ),
 
                 const SizedBox(height: 4),
 
-                if (user['company']['catchPhrase'] != null) ...[
+                if (user.company!.catchPhrase != null) ...[
                   UserDetailCard(
                     label: 'Catch Phrase',
-                    value: user['company']['catchPhrase'],
+                    value: user.company!.catchPhrase!,
                     icon: Icons.tag_outlined,
                   ),
                   const SizedBox(height: 4),
                 ],
 
-                if (user['company']['bs'] != null) ...[
+                if (user.company!.bs != null) ...[
                   UserDetailCard(
                     label: 'Business',
-                    value: user['company']['bs'],
+                    value: user.company!.bs!,
                     icon: Icons.work_outline,
                   ),
                   const SizedBox(height: 4),

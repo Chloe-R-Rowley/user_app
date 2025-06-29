@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../screens/user_detail_page.dart';
+import '../models/user_model.dart';
 
 class UserCard extends StatelessWidget {
-  final Map<String, dynamic> user;
+  final User user;
 
   const UserCard({super.key, required this.user});
 
@@ -49,7 +50,7 @@ class UserCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  user['name'],
+                  user.name,
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     color: colorScheme.onPrimaryContainer,
