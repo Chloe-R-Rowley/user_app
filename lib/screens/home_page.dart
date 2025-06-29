@@ -41,58 +41,122 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BlocProvider(
-      create: (_) => UserBloc()..add(FetchUsers()),
-      child: Scaffold(
-        backgroundColor: colorScheme.surface,
-        floatingActionButton: BlocBuilder<UserBloc, UserState>(
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      floatingActionButton: BlocBuilder<UserBloc, UserState>(
+        builder: (context, state) {
+          if (state is UserLoaded) {
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          BlocProvider.value(
+                            value: context.read<UserBloc>(),
+                            child: const UserFormPage(),
+                          ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 1.0);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOut;
+
+                            var tween = Tween(
+                              begin: begin,
+                              end: end,
+                            ).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            );
+                          },
+                      transitionDuration: const Duration(milliseconds: 600),
+                    ),
+                  );
+                },
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                child: const Icon(Icons.add),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+      body: SafeArea(
+        child: BlocBuilder<UserBloc, UserState>(
           builder: (context, state) {
-            if (state is UserLoaded) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const UserFormPage(),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(0.0, 1.0);
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOut;
-
-                              var tween = Tween(
-                                begin: begin,
-                                end: end,
-                              ).chain(CurveTween(curve: curve));
-                              var offsetAnimation = animation.drive(tween);
-
-                              return SlideTransition(
-                                position: offsetAnimation,
-                                child: child,
-                              );
-                            },
-                        transitionDuration: const Duration(milliseconds: 600),
+            if (state is UserLoading) {
+              return Skeletonizer(
+                enabled: true,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Users',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Spectral',
+                          fontSize: 32,
+                        ),
                       ),
-                    );
-                  },
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  child: const Icon(Icons.add),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Loading users...',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontFamily: 'Spectral',
+                          fontWeight: FontWeight.w300,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: 10,
+                          itemBuilder: (context, index) {
+                            final dummyUser = User(
+                              id: index + 1,
+                              name: 'Loading User ${index + 1}',
+                              username: 'user${index + 1}',
+                              email: 'user${index + 1}@example.com',
+                              phone: '+1-555-0123',
+                              website: 'example.com',
+                              address: Address(
+                                street: '123 Main St',
+                                suite: 'Apt 4B',
+                                city: 'New York',
+                                zipcode: '10001',
+                                geo: Geo(lat: '40.7128', lng: '-74.0060'),
+                              ),
+                              company: Company(
+                                name: 'Example Corp',
+                                catchPhrase: 'Making the world better',
+                                bs: 'harness real-time e-markets',
+                              ),
+                            );
+                            return UserCard(user: dummyUser);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-        body: SafeArea(
-          child: BlocBuilder<UserBloc, UserState>(
-            builder: (context, state) {
-              if (state is UserLoading) {
-                return Skeletonizer(
-                  enabled: true,
+            } else if (state is UserLoaded) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<UserBloc>().add(RefreshUsers());
+                },
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
@@ -108,7 +172,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Loading users...',
+                          '${state.users.length} users found',
                           style: TextStyle(
                             color: colorScheme.onSurface,
                             fontFamily: 'Spectral',
@@ -119,87 +183,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         const SizedBox(height: 24),
                         Expanded(
                           child: ListView.builder(
-                            itemCount: 10,
+                            itemCount: state.users.length,
                             itemBuilder: (context, index) {
-                              final dummyUser = User(
-                                id: index + 1,
-                                name: 'Loading User ${index + 1}',
-                                username: 'user${index + 1}',
-                                email: 'user${index + 1}@example.com',
-                                phone: '+1-555-0123',
-                                website: 'example.com',
-                                address: Address(
-                                  street: '123 Main St',
-                                  suite: 'Apt 4B',
-                                  city: 'New York',
-                                  zipcode: '10001',
-                                  geo: Geo(lat: '40.7128', lng: '-74.0060'),
-                                ),
-                                company: Company(
-                                  name: 'Example Corp',
-                                  catchPhrase: 'Making the world better',
-                                  bs: 'harness real-time e-markets',
-                                ),
-                              );
-                              return UserCard(user: dummyUser);
+                              final user = state.users[index];
+                              return UserCard(user: user);
                             },
                           ),
                         ),
                       ],
                     ),
                   ),
-                );
-              } else if (state is UserLoaded) {
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<UserBloc>().add(RefreshUsers());
-                  },
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Users',
-                            style: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Spectral',
-                              fontSize: 32,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${state.users.length} users found',
-                            style: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontFamily: 'Spectral',
-                              fontWeight: FontWeight.w300,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: state.users.length,
-                              itemBuilder: (context, index) {
-                                final user = state.users[index];
-                                return UserCard(user: user);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              } else if (state is UserError) {
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<UserBloc>().add(RefreshUsers());
-                  },
-                  child: Center(
+                ),
+              );
+            } else if (state is UserError) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<UserBloc>().add(RefreshUsers());
+                },
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -249,11 +252,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
         ),
       ),
     );

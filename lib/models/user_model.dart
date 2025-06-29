@@ -50,6 +50,21 @@ class User {
   }
 }
 
+extension UserCopy on User {
+  User copyWith({int? id}) {
+    return User(
+      id: id ?? this.id,
+      name: name,
+      username: username,
+      email: email,
+      address: address,
+      phone: phone,
+      website: website,
+      company: company,
+    );
+  }
+}
+
 class Address {
   final String? street;
   final String? suite;
