@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../components/user_card.dart';
 import '../bloc/user_bloc.dart';
+import '../models/user_model.dart';
 import 'user_form_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -89,12 +91,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: BlocBuilder<UserBloc, UserState>(
             builder: (context, state) {
               if (state is UserLoading) {
-                return Center(
-                  child: CircularProgressIndicator(color: colorScheme.primary),
-                );
-              } else if (state is UserLoaded) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
+                return Skeletonizer(
+                  enabled: true,
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
@@ -110,7 +108,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${state.users.length} users found',
+                          'Loading users...',
                           style: TextStyle(
                             color: colorScheme.onSurface,
                             fontFamily: 'Spectral',
@@ -121,10 +119,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         const SizedBox(height: 24),
                         Expanded(
                           child: ListView.builder(
-                            itemCount: state.users.length,
+                            itemCount: 10,
                             itemBuilder: (context, index) {
-                              final user = state.users[index];
-                              return UserCard(user: user);
+                              final dummyUser = User(
+                                id: index + 1,
+                                name: 'Loading User ${index + 1}',
+                                username: 'user${index + 1}',
+                                email: 'user${index + 1}@example.com',
+                                phone: '+1-555-0123',
+                                website: 'example.com',
+                                address: Address(
+                                  street: '123 Main St',
+                                  suite: 'Apt 4B',
+                                  city: 'New York',
+                                  zipcode: '10001',
+                                  geo: Geo(lat: '40.7128', lng: '-74.0060'),
+                                ),
+                                company: Company(
+                                  name: 'Example Corp',
+                                  catchPhrase: 'Making the world better',
+                                  bs: 'harness real-time e-markets',
+                                ),
+                              );
+                              return UserCard(user: dummyUser);
                             },
                           ),
                         ),
@@ -132,8 +149,107 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                 );
+              } else if (state is UserLoaded) {
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<UserBloc>().add(RefreshUsers());
+                  },
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Users',
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Spectral',
+                              fontSize: 32,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${state.users.length} users found',
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              fontFamily: 'Spectral',
+                              fontWeight: FontWeight.w300,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: state.users.length,
+                              itemBuilder: (context, index) {
+                                final user = state.users[index];
+                                return UserCard(user: user);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
               } else if (state is UserError) {
-                return Center(child: Text('error'));
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<UserBloc>().add(RefreshUsers());
+                  },
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Error',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                            fontFamily: 'Spectral',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          state.message,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: colorScheme.onSurface,
+                            fontFamily: 'Spectral',
+                            fontWeight: FontWeight.w300,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context.read<UserBloc>().add(RefreshUsers());
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: Text(
+                            'Retry',
+                            style: TextStyle(
+                              fontFamily: 'Spectral',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
               return const SizedBox.shrink();
             },
