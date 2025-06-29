@@ -16,6 +16,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -34,7 +36,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _fadeController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  List<User> _filterUsers(List<User> users, String query) {
+    if (query.isEmpty) return users;
+
+    final lowercaseQuery = query.toLowerCase();
+    return users.where((user) {
+      return user.name.toLowerCase().contains(lowercaseQuery) ||
+          (user.username?.toLowerCase().contains(lowercaseQuery) ?? false) ||
+          (user.email?.toLowerCase().contains(lowercaseQuery) ?? false) ||
+          (user.company?.name?.toLowerCase().contains(lowercaseQuery) ?? false);
+    }).toList();
   }
 
   @override
@@ -151,6 +166,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               );
             } else if (state is UserLoaded) {
+              final filteredUsers = _filterUsers(state.users, _searchQuery);
+
               return RefreshIndicator(
                 onRefresh: () async {
                   context.read<UserBloc>().add(RefreshUsers());
@@ -170,9 +187,67 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             fontSize: 32,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
+                        // Search Bar
+                        Container(
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: colorScheme.outline.withOpacity(0.2),
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Search users...',
+                              hintStyle: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                                fontFamily: 'Spectral',
+                                fontWeight: FontWeight.w300,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(
+                                        Icons.clear,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(() {
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                    )
+                                  : null,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              fontFamily: 'Spectral',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         Text(
-                          '${state.users.length} users found',
+                          _searchQuery.isEmpty
+                              ? '${state.users.length} users found'
+                              : '${filteredUsers.length} of ${state.users.length} users found',
                           style: TextStyle(
                             color: colorScheme.onSurface,
                             fontFamily: 'Spectral',
@@ -182,13 +257,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 24),
                         Expanded(
-                          child: ListView.builder(
-                            itemCount: state.users.length,
-                            itemBuilder: (context, index) {
-                              final user = state.users[index];
-                              return UserCard(user: user);
-                            },
-                          ),
+                          child:
+                              filteredUsers.isEmpty && _searchQuery.isNotEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.search_off,
+                                        size: 64,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No users found',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                          color: colorScheme.onSurface,
+                                          fontFamily: 'Spectral',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Try adjusting your search terms',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: colorScheme.onSurfaceVariant,
+                                          fontFamily: 'Spectral',
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: filteredUsers.length,
+                                  itemBuilder: (context, index) {
+                                    final user = filteredUsers[index];
+                                    return UserCard(user: user);
+                                  },
+                                ),
                         ),
                       ],
                     ),
