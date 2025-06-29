@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
           onSurface: Color(0xFF1C1B1F),
         ),
       ),
-      home: Scaffold(body: const Center(child: Text('Hello World'))),
+      home: const HomePage(),
     );
   }
 }
