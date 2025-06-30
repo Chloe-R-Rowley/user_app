@@ -18,56 +18,34 @@ class UserDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      elevation: 1,
-      color: colorScheme.primaryContainer,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(icon, color: colorScheme.onPrimaryContainer, size: 24),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onPrimaryContainer,
-                      fontFamily: 'Spectral',
-                      fontWeight: FontWeight.w500,
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        elevation: 1,
+        color: colorScheme.primaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Icon(icon, color: colorScheme.onPrimaryContainer, size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colorScheme.onPrimaryContainer,
+                        fontFamily: 'Spectral',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  if (isStatus)
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: value == 'Active'
-                                ? Colors.green
-                                : colorScheme.error,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: colorScheme.onPrimaryContainer,
-                            fontFamily: 'Spectral',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    )
-                  else
+                    const SizedBox(height: 4),
                     Text(
                       value,
                       style: TextStyle(
@@ -77,10 +55,11 @@ class UserDetailCard extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

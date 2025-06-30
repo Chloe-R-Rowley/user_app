@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../components/user_card.dart';
 import '../bloc/user_bloc.dart';
@@ -107,62 +108,130 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: BlocBuilder<UserBloc, UserState>(
           builder: (context, state) {
             if (state is UserLoading) {
-              return Skeletonizer(
-                enabled: true,
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Users',
-                        style: TextStyle(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Spectral',
-                          fontSize: 32,
-                        ),
+              return Padding(
+                padding: EdgeInsets.all(
+                  MediaQuery.of(context).size.width < 768 ? 24.0 : 40.0,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Users',
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Spectral',
+                        fontSize: 32,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Loading users...',
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colorScheme.onSurface),
+                      ),
+                      child: TextField(
+                        enabled: false,
+                        controller: _searchController,
+                        onChanged: (value) {},
+                        decoration: InputDecoration(
+                          hintText: 'Search users...',
+                          hintStyle: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontFamily: 'Spectral',
+                            fontWeight: FontWeight.w300,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: colorScheme.onSurface,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
                         style: TextStyle(
                           color: colorScheme.onSurface,
                           fontFamily: 'Spectral',
-                          fontWeight: FontWeight.w300,
+                          fontWeight: FontWeight.w400,
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: 10,
-                          itemBuilder: (context, index) {
-                            final dummyUser = User(
-                              id: index + 1,
-                              name: 'Loading User ${index + 1}',
-                              username: 'user${index + 1}',
-                              email: 'user${index + 1}@example.com',
-                              phone: '+1-555-0123',
-                              website: 'example.com',
-                              address: Address(
-                                street: '123 Main St',
-                                suite: 'Apt 4B',
-                                city: 'New York',
-                                zipcode: '10001',
-                                geo: Geo(lat: '40.7128', lng: '-74.0060'),
-                              ),
-                              company: Company(
-                                name: 'Example Corp',
-                                catchPhrase: 'Making the world better',
-                                bs: 'harness real-time e-markets',
-                              ),
-                            );
-                            return UserCard(user: dummyUser);
-                          },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Loading users...',
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
+                        fontFamily: 'Spectral',
+                        fontWeight: FontWeight.w300,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: Skeletonizer(
+                        enabled: true,
+                        child: SingleChildScrollView(
+                          child: LayoutGrid(
+                            columnSizes: MediaQuery.of(context).size.width < 768
+                                ? [1.fr]
+                                : MediaQuery.of(context).size.width < 1440
+                                ? List.filled(2, 1.fr)
+                                : List.filled(4, 1.fr),
+                            rowSizes: List.filled(
+                              MediaQuery.of(context).size.width < 768
+                                  ? 10
+                                  : MediaQuery.of(context).size.width < 1440
+                                  ? 5
+                                  : 3,
+                              auto,
+                            ),
+                            columnGap: 16,
+                            rowGap: 16,
+                            children: List.generate(10, (index) {
+                              final dummyUser = User(
+                                id: index + 1,
+                                name: 'Loading User ${index + 1}',
+                                username: 'user${index + 1}',
+                                email: 'user${index + 1}@example.com',
+                                phone: '+1-555-0123',
+                                website: 'example.com',
+                                address: Address(
+                                  street: '123 Main St',
+                                  suite: 'Apt 4B',
+                                  city: 'New York',
+                                  zipcode: '10001',
+                                  geo: Geo(lat: '40.7128', lng: '-74.0060'),
+                                ),
+                                company: Company(
+                                  name: 'Example Corp',
+                                  catchPhrase: 'Making the world better',
+                                  bs: 'harness real-time e-markets',
+                                ),
+                              );
+                              return UserCard(user: dummyUser);
+                            }),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             } else if (state is UserLoaded) {
@@ -175,7 +244,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width < 768 ? 24.0 : 40.0,
+                    ),
                     child: Column(
                       children: [
                         Text(
@@ -191,11 +262,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         // Search Bar
                         Container(
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: colorScheme.outline.withOpacity(0.2),
-                            ),
+                            border: Border.all(color: colorScheme.onSurface),
                           ),
                           child: TextField(
                             controller: _searchController,
@@ -207,19 +276,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             decoration: InputDecoration(
                               hintText: 'Search users...',
                               hintStyle: TextStyle(
-                                color: colorScheme.onSurfaceVariant,
+                                color: colorScheme.onSurface,
                                 fontFamily: 'Spectral',
                                 fontWeight: FontWeight.w300,
                               ),
                               prefixIcon: Icon(
                                 Icons.search,
-                                color: colorScheme.onSurfaceVariant,
+                                color: colorScheme.onSurface,
                               ),
                               suffixIcon: _searchQuery.isNotEmpty
                                   ? IconButton(
                                       icon: Icon(
                                         Icons.clear,
-                                        color: colorScheme.onSurfaceVariant,
+                                        color: colorScheme.onSurface,
                                       ),
                                       onPressed: () {
                                         _searchController.clear();
@@ -256,10 +325,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Expanded(
-                          child:
-                              filteredUsers.isEmpty && _searchQuery.isNotEmpty
-                              ? Center(
+                        filteredUsers.isEmpty && _searchQuery.isNotEmpty
+                            ? Expanded(
+                                child: Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -291,15 +359,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       ),
                                     ],
                                   ),
-                                )
-                              : ListView.builder(
-                                  itemCount: filteredUsers.length,
-                                  itemBuilder: (context, index) {
-                                    final user = filteredUsers[index];
-                                    return UserCard(user: user);
-                                  },
                                 ),
-                        ),
+                              )
+                            : Expanded(
+                                child: SingleChildScrollView(
+                                  child: LayoutGrid(
+                                    columnSizes:
+                                        MediaQuery.of(context).size.width < 768
+                                        ? [1.fr]
+                                        : MediaQuery.of(context).size.width <
+                                              1440
+                                        ? List.filled(2, 1.fr)
+                                        : List.filled(4, 1.fr),
+                                    rowSizes: List.filled(
+                                      MediaQuery.of(context).size.width < 768
+                                          ? (filteredUsers.length / 1).ceil()
+                                          : MediaQuery.of(context).size.width <
+                                                1440
+                                          ? (filteredUsers.length / 2).ceil()
+                                          : (filteredUsers.length / 4).ceil(),
+                                      auto,
+                                    ),
+                                    columnGap: 16,
+                                    rowGap: 16,
+                                    children: [
+                                      ...filteredUsers
+                                          .map((user) => UserCard(user: user))
+                                          .toList(),
+                                    ],
+                                  ),
+                                ),
+                              ),
                       ],
                     ),
                   ),
